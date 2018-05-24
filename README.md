@@ -29,15 +29,15 @@ clogger.UseColor = true
 ```
 All the default Cloggers come have colors associated with them by default. You can change the colors by using SetColor() method on the Clogger. You can either use a provided color, or create your own if you have the ANSI code. 
 ```go
-    // change the color of Error Clogger to one of the provided color contsants
-    cl := GetCloggerByName("Error")
-    cl.SetColor(clogger.COLOR_CYAN)
+// change the color of Error Clogger to one of the provided color contsants
+cl := GetCloggerByName("Error")
+cl.SetColor(clogger.COLOR_CYAN)
 ```
 ```go
-    // change the color of Error Clogger to your own color
-    yellow := clogger.NewColor("\x1b[33;1m")
-    cl := GetCloggerByName("Error")
-    cl.SetColor(yellow)
+// change the color of Error Clogger to your own color
+yellow := clogger.NewColor("\x1b[33;1m")
+cl := GetCloggerByName("Error")
+cl.SetColor(yellow)
 ```
 
 ## Terminal (Standard Out)
@@ -64,4 +64,4 @@ myClogger.Printf("This is a simple logging message using %s", "myClogger")
 ```
 
   ### Contact
-For any issues, please open a new issue. If you want to contribute, please feel free to submit a merge request or reach out to me at copperchain@teejay.me.
+For any issues, please open a new issue. If you want to contribute, please feel free to submit a merge request or reach out to me at clogger@teejay.me.
