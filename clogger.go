@@ -78,7 +78,7 @@ const (
 	BG_WHITE   Decoration = "\x1b[47m"
 )
 
-// NewDecoration takes a string representation of sgr code (ANSI), casts it as an Decoration, and returns it. It panics if the sgrCode is not
+// NewDecoration takes a string representation of sgr code (ANSI), casts it as a Decoration, and returns it. It panics if the sgrCode is not
 // a valid ansi escape sequence code.
 func NewDecoration(sgrCode string) Decoration {
 	// verify that it's an ansi code
