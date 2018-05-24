@@ -16,6 +16,19 @@ import (
 
 const PACKAGE_NAME string = `clogger`
 
+// LogToStdOut flag determines if messages should be to the standard terminal output
+var LogToStdOut bool = true
+
+// UseColor flag determines whether standard output logs should have color
+var UseColor bool
+
+// UseTimestamp flag determines whether standard output logs should prepend timestamp
+var UseTimestamp bool = true
+
+// TimestampFormat is the format of the timestamp that is prepernded to std out logs. The default value
+// is 2006/01/02 15:04:05
+var TimestampFormat string = "2006/01/02 15:04:05"
+
 /********************************************************************************
 * C O L O R  																	*
 *********************************************************************************/
@@ -57,8 +70,22 @@ type Clogger struct {
 	*log.Logger
 }
 
-// StdPrintln prints msg as a line in the std out. If configured, it  appends the timestamp and uses color.
-func (s *Clogger) StdPrintln(msg string) {
+// Print logs the message in the Syslog and, if LogToStdOut flag is set to true, it logs
+// the message to the standard out.
+func (s *Clogger) Print(msg string) {
+	s.Logger.Print(msg)
+	s.StdPrint(msg)
+}
+
+// Printf formats the msg with the provided args and logs to Syslog. If LogToStdOut flag
+//  is set to true, it also logs the message to the standard out.
+func (s *Clogger) Printf(formatString string, args ...interface{}) {
+	s.Logger.Printf(formatString, args...)
+	s.StdPrintf(formatString, args...)
+}
+
+// StdPrint prints msg as a line in the std out. If configured, it also appends the timestamp and uses color.
+func (s *Clogger) StdPrint(msg string) {
 	if UseTimestamp {
 		msg = appendTimestamp(msg)
 	}
@@ -72,7 +99,7 @@ func (s *Clogger) StdPrintln(msg string) {
 // it appends the timestamp and uses color.
 func (s *Clogger) StdPrintf(formatString string, args ...interface{}) {
 	msg := fmt.Sprintf(formatString, args...)
-	s.StdPrintln(msg)
+	s.StdPrint(msg)
 }
 
 // SetColor sets the color of the Clogger.
@@ -111,19 +138,6 @@ var cloggers map[string]*Clogger = map[string]*Clogger{
 func init() {
 	createDefaultCloggers()
 }
-
-// LogToStdOut flag determines if messages should be to the standard terminal output
-var LogToStdOut bool
-
-// UseColor flag determines whether standard output logs should have color
-var UseColor bool
-
-// UseTimestamp flag determines whether standard output logs should prepend timestamp
-var UseTimestamp bool
-
-// TimestampFormat is the format of the timestamp that is prepernded to std out logs. The default value
-// is 2006/01/02 15:04:05
-var TimestampFormat string = "2006/01/02 15:04:05"
 
 func createDefaultCloggers() {
 	var err error
@@ -177,7 +191,7 @@ func Info(msg string) {
 	clogger := GetCloggerByName("Info")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
@@ -186,7 +200,7 @@ func Debug(msg string) {
 	clogger := GetCloggerByName("Debug")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
@@ -195,7 +209,7 @@ func Notice(msg string) {
 	clogger := GetCloggerByName("Notice")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
@@ -204,7 +218,7 @@ func Warning(msg string) {
 	clogger := GetCloggerByName("Warning")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
@@ -213,7 +227,7 @@ func Error(msg string) {
 	clogger := GetCloggerByName("Error")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
@@ -222,7 +236,7 @@ func Crit(msg string) {
 	clogger := GetCloggerByName("Crit")
 	clogger.Print(msg)
 	if LogToStdOut {
-		clogger.StdPrintln(msg)
+		clogger.StdPrint(msg)
 	}
 }
 
