@@ -12,7 +12,7 @@ Install Clogger package in your system  by running the following go get command 
 
 You can then include Clogger in your personal Go project by adding the following import statement in your Go file:
 ```go
-import github.com/teejays/copperchain
+import github.com/teejays/clogger
 ```
 
 You can log using one of the default profiles (also called default _Cloggers_) or create your own one. There are six default Cloggers available: Debug, Info, Notice, Warning, Error, Crit. For these default Cloggers, which is what you will mostly need in your project, you can use the built in functions for quick logging. Here is a sample logging code for the Info Clogger.
