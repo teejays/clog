@@ -118,13 +118,23 @@ func NewClogger(priority syslog.Priority, decorations ...Decoration) *Clogger {
 	return clogger
 }
 
-// SetColor sets the color of the Clogger.
-func (s *Clogger) AddDecoration(d Decoration) {
-	s.Decorations = append(s.Decorations, d)
+// AddDecoration adds the decoration to the Clogger.
+func (l *Clogger) AddDecoration(d Decoration) {
+	l.Decorations = append(l.Decorations, d)
 }
 
-// Print logs the message in the Syslog and, if LogToStdOut flag is set to true, it logs
-// the message to the standard out.
+// RemoveDecoration removes the decoration from the Clogger.
+func (l *Clogger) RemoveDecoration(d Decoration) {
+	for i, _d := range l.Decorations {
+		if d == _d {
+			// delete the decoration from the list
+			l.Decorations = append(l.Decorations[:i], l.Decorations[i+1:]...)
+		}
+	}
+}
+
+// Print logs the message in the Syslog if LogToSyslog is set to true. It logs to the standard out
+// (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Print(msg string) {
 	if LogToSyslog {
 		l.Logger.Print(msg)
@@ -136,6 +146,8 @@ func (l *Clogger) Print(msg string) {
 
 // Printf formats the msg with the provided args and logs to Syslog. If LogToStdOut flag
 //  is set to true, it also logs the message to the standard out.
+// Printf formats the message with the provided args. It logs the message in the Syslog if LogToSyslog is set to true.
+//  It logs to the standard out (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Printf(formatString string, args ...interface{}) {
 	if LogToSyslog {
 		l.Logger.Printf(formatString, args...)
@@ -145,7 +157,9 @@ func (l *Clogger) Printf(formatString string, args ...interface{}) {
 	}
 }
 
-// StdPrint prints msg as a line in the std out. If configured, it also appends the timestamp and uses color.
+// StdPrint prints msg as a line in the standard output (terminal). If UseTimestamp is set to true,
+// it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
+// associated with the l Clogger.
 func (l *Clogger) StdPrint(msg string) {
 	if UseTimestamp {
 		msg = appendTimestamp(msg)
@@ -156,8 +170,9 @@ func (l *Clogger) StdPrint(msg string) {
 	fmt.Println(msg)
 }
 
-// StdPrintf formats msg with the provided args and prints it as a line in the standard output. If configured,
-// it appends the timestamp and uses color.
+// StdPrintf formats msg with the provided args and prints it as a line in the standard output. If UseTimestamp is
+// set to true, it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
+// associated with the l Clogger.
 func (l *Clogger) StdPrintf(formatString string, args ...interface{}) {
 	msg := fmt.Sprintf(formatString, args...)
 	l.StdPrint(msg)
