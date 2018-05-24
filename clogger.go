@@ -145,9 +145,9 @@ func (l *Clogger) Print(msg string) {
 }
 
 // Printf formats the msg with the provided args and logs to Syslog. If LogToStdOut flag
-//  is set to true, it also logs the message to the standard out.
-// Printf formats the message with the provided args. It logs the message in the Syslog if LogToSyslog is set to true.
-//  It logs to the standard out (terminal) if LogToStdOut flag is set to true.
+// is set to true, it also logs the message to the standard out. Printf formats the message
+// with the provided args. It logs the message in the Syslog if LogToSyslog is
+// set to true. It logs to the standard out (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Printf(formatString string, args ...interface{}) {
 	if LogToSyslog {
 		l.Logger.Printf(formatString, args...)
