@@ -8,7 +8,7 @@
 // Clogger is the primary logger object, a profile. It holds information
 // neccesary for both Syslog and Std. Out logging for that particular profile. Therefore, messages
 // logged with the same Clogger will show same behavior and use the same decorations. This package comes
-//  with some default Cloggers, namely Debug, Info, Warning, Error, Critical, Fatal. These cloggers have
+// with some default Cloggers, namely Debug, Info, Warning, Error, Critical, Fatal. These cloggers have
 // preset configuration making it very easy to use it out of the box.
 package clogger
 
