@@ -51,7 +51,7 @@ cl.AddDecoration(yellow)
 ```
 
 ## Logging Outputs (Syslog vs. Std. Out)
-By default, clogger package logs messages to both the [Syslog](https://en.wikipedia.org/wiki/Syslog) and the standard out (i.e. your terminal). If you want to stop logging to either channel your terminal, you can use the below flags.
+By default, clogger package logs messages to both the [Syslog](https://en.wikipedia.org/wiki/Syslog) and the standard out (i.e. your terminal). If you want to stop logging to either channel, you can set the below flags.
 ```go
 clogger.LogToStdOut = false // stop logging to std. out
 clogger.LogToSyslog = false // stop logging to syslog
@@ -62,7 +62,7 @@ clogger.UseTimestamp = false
 ```
 
 ## Create your own Clogger
-Although you will rarely have to, you can create, save, and use a custom Clogger if you want. This allows you specify the logging priority and decorations of your Clogger. The following code demonstrates how this can be done.
+Although you will rarely have to, you can create, save, and use a custom Clogger if you want. This allows you to specify the logging priority and decorations of your Clogger. The following code demonstrates how this can be done.
 ```go
 cl := clogger.NewClogger(syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_RED, BG_BLUE, BRIGHT)
 clogger.RegisterClogger("myClogger", cl)
