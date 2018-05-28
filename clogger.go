@@ -1,16 +1,16 @@
-// clogger package provides a small, simple, fast logging library for your Go projects.
+// clog package provides a small, simple, fast logging library for your Go projects.
 // It can log to the syslog and/or your terminal's std output.
 //
 // There are two main types in this package that you need to understand: Decoration, and Clogger.
 // Decoration is an ANSI escape sequence, hence a string, that can be used to format a message
 // that is logged to the standard out (terminal).
 //
-// Clogger is the primary logger object, a profile. It holds information
+// Clog is the primary logger object, a profile. It holds information
 // neccesary for both Syslog and Std. Out logging for that particular profile. Therefore, messages
 // logged with the same Clogger will show same behavior and use the same decorations. This package
 // comes with some default Cloggers, namely Debug, Info, Warning, Error, Critical, Fatal. These cloggers have
 // preset configuration making it very easy to use it out of the box.
-package clogger
+package clog
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-const PACKAGE_NAME string = `clogger`
+const PACKAGE_NAME string = `Clog`
 
 // LogToStdOut flag determines if messages should be logged to the standard terminal output
 var LogToStdOut bool = true
@@ -98,6 +98,7 @@ func NewDecoration(sgrCode string) Decoration {
 // associated decorations Decorations, syslog priority level. This package come with some
 // default Cloggers, but Clogger can also be created using the NewClogger() method.
 type Clogger struct {
+	Name string
 	syslog.Priority
 	Decorations []Decoration
 	*log.Logger
@@ -105,16 +106,23 @@ type Clogger struct {
 
 // NewClogger accepts priority in the form of syslog.Priority, and a Color, and returns
 // a pointer to a new Clogger object with those properties. It panics if it encounters an error.
-func NewClogger(priority syslog.Priority, decorations ...Decoration) *Clogger {
+func NewClogger(name string, priority syslog.Priority, decorations ...Decoration) *Clogger {
 	clogger := new(Clogger)
+	clogger.Name = name
 	clogger.Priority = priority
 	clogger.Decorations = decorations
+	// https://en.wikipedia.org/wiki/Syslog
 	logger, err := syslog.NewLogger(clogger.Priority, 0)
+	if err != nil {
+		log.Printf("[%s] '%s' clogger cannot not log to syslog as failed to start syslog.Logger(): %v", PACKAGE_NAME, clogger.Name, err)
+	} else {
+		clogger.Logger = logger
+	}
+
+	err = registerClogger(clogger)
 	if err != nil {
 		log.Panic(err)
 	}
-	clogger.Logger = logger
-
 	return clogger
 }
 
@@ -136,7 +144,7 @@ func (l *Clogger) RemoveDecoration(d Decoration) {
 // Print logs the message in the Syslog if LogToSyslog is set to true. It logs to the standard out
 // (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Print(msg string) {
-	if LogToSyslog {
+	if LogToSyslog && l.Logger != nil {
 		l.Logger.Print(msg)
 	}
 	if LogToStdOut {
@@ -149,7 +157,7 @@ func (l *Clogger) Print(msg string) {
 // with the provided args. It logs the message in the Syslog if LogToSyslog is
 // set to true. It logs to the standard out (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Printf(formatString string, args ...interface{}) {
-	if LogToSyslog {
+	if LogToSyslog && l.Logger != nil {
 		l.Logger.Printf(formatString, args...)
 	}
 	if LogToStdOut {
@@ -206,41 +214,25 @@ func timestamp() string {
 /********************************************************************************
 * S Y S L O G G E R   															*
 *********************************************************************************/
+var cloggers map[string]*Clogger = make(map[string]*Clogger)
 
 // default cloggers
-var cloggers map[string]*Clogger = map[string]*Clogger{
-	"Debug":   NewClogger(syslog.LOG_DEBUG|syslog.LOG_LOCAL1, FG_WHITE),
-	"Info":    NewClogger(syslog.LOG_INFO|syslog.LOG_LOCAL1, FG_GREEN),
-	"Notice":  NewClogger(syslog.LOG_NOTICE|syslog.LOG_LOCAL1, FG_WHITE),
-	"Warning": NewClogger(syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_YELLOW),
-	"Error":   NewClogger(syslog.LOG_ERR|syslog.LOG_LOCAL1, FG_RED),
-	"Crit":    NewClogger(syslog.LOG_CRIT|syslog.LOG_LOCAL1, FG_MAGENTA),
+var defaultCloggers []*Clogger = []*Clogger{
+	NewClogger("Debug", syslog.LOG_DEBUG|syslog.LOG_LOCAL1, FG_WHITE),
+	NewClogger("Info", syslog.LOG_INFO|syslog.LOG_LOCAL1, FG_GREEN),
+	NewClogger("Notice", syslog.LOG_NOTICE|syslog.LOG_LOCAL1, FG_CYAN),
+	NewClogger("Warning", syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_YELLOW),
+	NewClogger("Error", syslog.LOG_ERR|syslog.LOG_LOCAL1, FG_RED),
+	NewClogger("Crit", syslog.LOG_CRIT|syslog.LOG_LOCAL1, FG_MAGENTA),
 }
 
-func init() {
-	createDefaultCloggers()
-}
-
-func createDefaultCloggers() {
-	var err error
-	// https://en.wikipedia.org/wiki/Syslog
-	for _, cl := range cloggers {
-		cl.Logger, err = syslog.NewLogger(cl.Priority, 0)
-		if err != nil {
-			log.Fatalf("%s: there has been an error starting the logger: %q", PACKAGE_NAME, err)
-		}
-		fmt.Printf("syslog.logger initialized => ")
-
+// registerLogger adds a new Clogger to the cloggers map, which can then be fetched
+// by calling the GetCloggerByName method.
+func registerClogger(cl *Clogger) error {
+	if _, exists := cloggers[cl.Name]; exists {
+		return fmt.Errorf("%s: a logger with the name %s already exists", PACKAGE_NAME, cl.Name)
 	}
-}
-
-// RegisterLogger adds a new custom Clogger to the system, which can then be fetched by calling
-// the GetCloggerByName method.
-func RegisterClogger(name string, cl *Clogger) error {
-	if _, exists := cloggers[name]; exists {
-		return fmt.Errorf("%s: a logger with the name %s already exists", PACKAGE_NAME, name)
-	}
-	cloggers[name] = cl
+	cloggers[cl.Name] = cl
 	return nil
 }
 

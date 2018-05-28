@@ -2,37 +2,37 @@ package main
 
 import (
 	"github.com/teejays/clogger"
-	"log"
+	//"log"
 	"log/syslog"
 )
 
 func main() {
 
-	clogger.LogToSyslog = true
+	clog.LogToSyslog = true
 
 	// print a bunch of statements
-	clogger.Debug("Debug: This is a debug statement.")
-	clogger.Debugf("Debug: This is a %s statement.", "Debug")
+	clog.Debug("Debug: This is a debug statement.")
+	clog.Debugf("Debug: This is a %s statement.", "Debug")
 
-	clogger.Info("Info: This is a Info statement.")
-	clogger.Infof("Info: This is a %s statement.", "Info")
+	clog.Info("Info: This is a Info statement.")
+	clog.Infof("Info: This is a %s statement.", "Info")
 
-	clogger.Warning("Warning: This is a Warning statement.")
-	clogger.Warningf("Warning: This is a %s statement.", "Warning")
+	clog.Warning("Warning: This is a Warning statement.")
+	clog.Warningf("Warning: This is a %s statement.", "Warning")
 
-	clogger.Error("Error: This is a Error statement.")
-	clogger.Errorf("Error: This is a %s statement.", "Error")
+	clog.Error("Error: This is a Error statement.")
+	clog.Errorf("Error: This is a %s statement.", "Error")
 
-	clogger.Crit("Crit: This is a Crit statement.")
-	clogger.Critf("Crit: This is a %s statement.", "Crit")
+	clog.Crit("Crit: This is a Crit statement.")
+	clog.Critf("Crit: This is a %s statement.", "Crit")
 
 	// self logger
-	myLogger := clogger.NewClogger(syslog.LOG_INFO|syslog.LOG_LOCAL1, clogger.BLINK, clogger.FG_GREEN)
+	myLogger := clog.NewClogger("myClogger", syslog.LOG_INFO|syslog.LOG_LOCAL1, clog.BLINK, clog.FG_GREEN)
 	myLogger.Print("myLogger: This is a myLogger statement")
 	myLogger.Printf("myLogger: This is a %s statement.", "myLogger")
 
 	// Print function
 
-	clogger.Print("This is my own message!", clogger.BG_YELLOW, clogger.BRIGHT, clogger.FG_BLUE)
+	clog.Print("This is my own message!", clog.BLINK, clog.BG_YELLOW, clog.BRIGHT, clog.FG_BLUE)
 
 }
