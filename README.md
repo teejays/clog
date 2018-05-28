@@ -12,6 +12,8 @@ The package comes with some default Cloggers, namely Debug, Info, Warning, Notic
 
 Click [here](https://godoc.org/github.com/teejays/clogger) for code documentation.
  
+_**Windows Users**_: The package has not been tested for Windows command prompt. 
+
 ## Getting Started
 
 Install Clog package in your system  by running the following go get command in your terminal:
