@@ -3,7 +3,7 @@
 Clog package provides a small, simple, colored logging library for your Go projects. It can log to the syslog and your terminal's std output. 
 
 See this in your terminal instead of the boring standard logs!
-![Clog Terminal Screenshot](https://gyazo.com/f7853cfa693f2f11f94e401dbb75c514)
+![Clog Terminal Screenshot](https://i.gyazo.com/f7853cfa693f2f11f94e401dbb75c514.mp4)
 
 
 
