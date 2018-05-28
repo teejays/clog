@@ -26,7 +26,7 @@ const PACKAGE_NAME string = `clogger`
 var LogToStdOut bool = true
 
 // LogToSyslog flag determines if messages should be logged to the syslog
-var LogToSyslog bool = true
+var LogToSyslog bool = false
 
 // UseDecoration flag determines whether standard output logs should use any of the decorations associated with the logger
 var UseDecoration bool
@@ -109,11 +109,13 @@ func NewClogger(priority syslog.Priority, decorations ...Decoration) *Clogger {
 	clogger := new(Clogger)
 	clogger.Priority = priority
 	clogger.Decorations = decorations
-	logger, err := syslog.NewLogger(clogger.Priority, 0)
-	if err != nil {
-		log.Panic(err)
+	if LogToSyslog {
+		logger, err := syslog.NewLogger(clogger.Priority, 0)
+		if err != nil {
+			log.Panic(err)
+		}
+		clogger.Logger = logger
 	}
-	clogger.Logger = logger
 
 	return clogger
 }
@@ -220,10 +222,13 @@ func createDefaultCloggers() {
 	var err error
 	// https://en.wikipedia.org/wiki/Syslog
 	for _, cl := range cloggers {
-		cl.Logger, err = syslog.NewLogger(cl.Priority, 0)
-		if err != nil {
-			log.Fatalf("%s: there has been an error starting the logger: %q", PACKAGE_NAME, err)
+		if LogToSyslog {
+			cl.Logger, err = syslog.NewLogger(cl.Priority, 0)
+			if err != nil {
+				log.Fatalf("%s: there has been an error starting the logger: %q", PACKAGE_NAME, err)
+			}
 		}
+
 	}
 }
 
