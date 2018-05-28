@@ -114,7 +114,7 @@ func NewClogger(name string, priority syslog.Priority, decorations ...Decoration
 	// https://en.wikipedia.org/wiki/Syslog
 	logger, err := syslog.NewLogger(clogger.Priority, 0)
 	if err != nil {
-		log.Printf("[%s] '%s' clogger cannot not log to syslog as failed to start syslog.Logger(): %v", PACKAGE_NAME, clogger.Name, err)
+		log.Printf("[%s] '%s' clogger will not log to syslog as it failed to initialize syslog.Logger(): %v", PACKAGE_NAME, clogger.Name, err)
 	} else {
 		clogger.Logger = logger
 	}
