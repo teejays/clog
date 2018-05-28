@@ -45,14 +45,14 @@ All the default Cloggers have pre-defined decorations associated with them. You 
 ```go
 // change the color of Error Clogger to one of the provided color contsants
 cl := clog.GetCloggerByName("Error")
-cl.RemoveDecoration(clogger.FG_RED) // remove the red color decoration
-cl.AddDecoration(clogger.FG_YELLOW) // add the yellow color decoration
-cl.AddDecoration(clogger.BRIGHT) 	// let's make it bright as well, because why not
+cl.RemoveDecoration(clog.FG_RED) // remove the red color decoration
+cl.AddDecoration(clog.FG_YELLOW) // add the yellow color decoration
+cl.AddDecoration(clog.BRIGHT) 	// let's make it bright as well, because why not
 ```
 ```go
 // change the color of Error Clogger to your own color
 fgYellow := clog.NewDecoration("\x1b[33;1m") / create your own Decoration
-cl := GetCloggerByName("Error")
+cl := clog.GetCloggerByName("Error")
 cl.AddDecoration(yellow)
 ```
 
@@ -70,7 +70,7 @@ clog.UseTimestamp = false
 ## Create your own Clogger
 Although you will rarely have to, you can create, save, and use a custom Clogger if you want. This allows you to specify the logging priority and your own decorations for your Clogger. The following code demonstrates how this can be done.
 ```go
-cl := clog.NewClogger("myClogger", syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_RED, BG_BLUE, BRIGHT)
+cl := clog.NewClogger("myClogger", syslog.LOG_WARNING|syslog.LOG_LOCAL1, clog.FG_RED, clog.BG_BLUE, clog.BRIGHT)
 ```
 You can then use your myClogger from anywhere in your project/executable by calling your saved clogger and using print functions.
 ```go
