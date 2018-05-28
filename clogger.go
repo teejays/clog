@@ -29,7 +29,7 @@ var LogToStdOut bool = true
 var LogToSyslog bool = false
 
 // UseDecoration flag determines whether standard output logs should use any of the decorations associated with the logger
-var UseDecoration bool
+var UseDecoration bool = true
 
 // UseTimestamp flag determines whether standard output logs should prepend timestamp
 var UseTimestamp bool = true
@@ -109,13 +109,11 @@ func NewClogger(priority syslog.Priority, decorations ...Decoration) *Clogger {
 	clogger := new(Clogger)
 	clogger.Priority = priority
 	clogger.Decorations = decorations
-	if LogToSyslog {
-		logger, err := syslog.NewLogger(clogger.Priority, 0)
-		if err != nil {
-			log.Panic(err)
-		}
-		clogger.Logger = logger
+	logger, err := syslog.NewLogger(clogger.Priority, 0)
+	if err != nil {
+		log.Panic(err)
 	}
+	clogger.Logger = logger
 
 	return clogger
 }
@@ -142,7 +140,7 @@ func (l *Clogger) Print(msg string) {
 		l.Logger.Print(msg)
 	}
 	if LogToStdOut {
-		l.StdPrint(msg)
+		l.PrintStdOut(msg)
 	}
 }
 
@@ -155,19 +153,19 @@ func (l *Clogger) Printf(formatString string, args ...interface{}) {
 		l.Logger.Printf(formatString, args...)
 	}
 	if LogToStdOut {
-		l.StdPrintf(formatString, args...)
+		l.PrintfStdOut(formatString, args...)
 	}
 }
 
 // StdPrint prints msg as a line in the standard output (terminal). If UseTimestamp is set to true,
 // it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
 // associated with the l Clogger.
-func (l *Clogger) StdPrint(msg string) {
+func (l *Clogger) PrintStdOut(msg string) {
 	if UseTimestamp {
 		msg = appendTimestamp(msg)
 	}
 	if UseDecoration {
-		msg = decorate(msg, l.Decorations)
+		msg = decorate(msg, l.Decorations...)
 	}
 	fmt.Println(msg)
 }
@@ -175,16 +173,21 @@ func (l *Clogger) StdPrint(msg string) {
 // StdPrintf formats msg with the provided args and prints it as a line in the standard output. If UseTimestamp is
 // set to true, it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
 // associated with the l Clogger.
-func (l *Clogger) StdPrintf(formatString string, args ...interface{}) {
+func (l *Clogger) PrintfStdOut(formatString string, args ...interface{}) {
 	msg := fmt.Sprintf(formatString, args...)
-	l.StdPrint(msg)
+	l.PrintStdOut(msg)
+}
+
+func Print(msg string, decorations ...Decoration) {
+	msg = decorate(msg, decorations...)
+	fmt.Println(msg)
 }
 
 func appendTimestamp(msg string) string {
 	return fmt.Sprintf("%s %s", timestamp(), msg)
 }
 
-func decorate(msg string, Decorations []Decoration) string {
+func decorate(msg string, Decorations ...Decoration) string {
 	var decorationsCode string
 	for _, d := range Decorations {
 		decorationsCode += string(d)
@@ -222,12 +225,11 @@ func createDefaultCloggers() {
 	var err error
 	// https://en.wikipedia.org/wiki/Syslog
 	for _, cl := range cloggers {
-		if LogToSyslog {
-			cl.Logger, err = syslog.NewLogger(cl.Priority, 0)
-			if err != nil {
-				log.Fatalf("%s: there has been an error starting the logger: %q", PACKAGE_NAME, err)
-			}
+		cl.Logger, err = syslog.NewLogger(cl.Priority, 0)
+		if err != nil {
+			log.Fatalf("%s: there has been an error starting the logger: %q", PACKAGE_NAME, err)
 		}
+		fmt.Printf("syslog.logger initialized => ")
 
 	}
 }

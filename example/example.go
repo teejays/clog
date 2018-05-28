@@ -2,12 +2,13 @@ package main
 
 import (
 	"github.com/teejays/clogger"
-	//"log/syslog"
+	"log"
+	"log/syslog"
 )
 
 func main() {
 
-	clogger.LogToSyslog = false
+	clogger.LogToSyslog = true
 
 	// print a bunch of statements
 	clogger.Debug("Debug: This is a debug statement.")
@@ -26,7 +27,12 @@ func main() {
 	clogger.Critf("Crit: This is a %s statement.", "Crit")
 
 	// self logger
-	//myLogger := clogger.NewClogger(syslog.LOG_INFO|syslog.LOG_LOCAL1, clogger.BLINK, clogger.BG_WHITE, clogger.FG_GREEN)
-	//myLogger.Print("myLogger: This is a myLogger statement")
-	//myLogger.Printf("myLogger: This is a %s statement.", "myLogger")
+	myLogger := clogger.NewClogger(syslog.LOG_INFO|syslog.LOG_LOCAL1, clogger.BLINK, clogger.FG_GREEN)
+	myLogger.Print("myLogger: This is a myLogger statement")
+	myLogger.Printf("myLogger: This is a %s statement.", "myLogger")
+
+	// Print function
+
+	clogger.Print("This is my own message!", clogger.BG_YELLOW, clogger.BRIGHT, clogger.FG_BLUE)
+
 }
