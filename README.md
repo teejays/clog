@@ -10,7 +10,7 @@ __Clogger__ is the primary logger object, a logger profile in other words. It ho
 
 The package comes with some default Cloggers, namely Debug, Info, Warning, Notice, Error, Critical, Fatal. These cloggers have preset configuration making it very easy to use it out of the box
 
-Click [here](https://godoc.org/github.com/teejays/clogger) for code documentation.
+Click [here](https://godoc.org/github.com/teejays/clog) for code documentation.
  
 _**Windows Users**_: The package has not been tested for Windows command prompt. 
 
