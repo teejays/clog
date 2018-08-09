@@ -271,6 +271,11 @@ func Warning(msg string) {
 	clogger.Print(msg)
 }
 
+// Warn logs the msg using the "Warning" default clogger.
+func Warn(msg string) {
+	Warning(msg)
+}
+
 // Error logs the msg using the "Error" default clogger.
 func Error(msg string) {
 	clogger := GetCloggerByName("Error")
@@ -287,6 +292,11 @@ func Crit(msg string) {
 func Fatal(msg string) {
 	Crit(msg)
 	log.Fatal(msg)
+}
+
+// FatalErr takes an error as an argument and logs the error msg using the "Fatal" default clogger. It also terminates the process by calling log.Fatal.
+func FatalErr(err error) {
+	Fatal(err.Error())
 }
 
 // Infof formats the message using the provided args, and logs the message using the 'Info' default clogger.
@@ -311,6 +321,11 @@ func Noticef(formatString string, args ...interface{}) {
 func Warningf(formatString string, args ...interface{}) {
 	clogger := GetCloggerByName("Warning")
 	clogger.Printf(formatString, args...)
+}
+
+// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
+func Warnf(formatString string, args ...interface{}) {
+	Warningf(formatString, args...)
 }
 
 // Errorf formats the message using the provided args, and logs the message using the 'Error' default clogger.
