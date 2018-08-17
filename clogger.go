@@ -97,6 +97,7 @@ func (l *Clogger) RemoveDecoration(d Decoration) {
 // Print logs the message in the Syslog if LogToSyslog is set to true. It logs to the standard out
 // (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Print(msg string) {
+	msg = fmt.Sprintf("[%s] %s", l.Name, msg)
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Print(msg)
 	}
@@ -110,6 +111,7 @@ func (l *Clogger) Print(msg string) {
 // with the provided args. It logs the message in the Syslog if LogToSyslog is
 // set to true. It logs to the standard out (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Printf(formatString string, args ...interface{}) {
+	formatString = fmt.Sprintf("[%s] %s", l.Name, formatString)
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Printf(formatString, args...)
 	}
