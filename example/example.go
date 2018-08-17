@@ -32,6 +32,12 @@ func main() {
 	myLogger.Printf("myLogger: This is a %s statement.", "myLogger")
 
 	// Example 3: clog.Print functions
-	clog.Print("This is my own message!", clog.BLINK, clog.BG_YELLOW, clog.BRIGHT, clog.FG_BLUE)
-	clog.Print(fmt.Sprintf("This is %s message!", "my own"), clog.BLINK, clog.BG_YELLOW, clog.BRIGHT, clog.FG_BLUE)
+	clog.PrintWithDecorations("This is my own message!", clog.BLINK, clog.BG_YELLOW, clog.BRIGHT, clog.FG_BLUE)
+	clog.PrintWithDecorations(fmt.Sprintf("This is %s message!", "my own"), clog.BLINK, clog.BG_YELLOW, clog.BRIGHT, clog.FG_BLUE)
+
+	// Example 4: Color functions
+	clog.Red("This is a red statement")
+	clog.Yellow("This is a yellow statement")
+	clog.Green("This is a green statement")
+	clog.Blue("This is a blue statement")
 }

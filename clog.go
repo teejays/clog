@@ -15,8 +15,6 @@ package clog
 import (
 	"fmt"
 	"log"
-	"log/syslog"
-	"regexp"
 	"time"
 )
 
@@ -31,167 +29,161 @@ var LogToSyslog bool = false
 // UseDecoration flag determines whether standard output logs should use any of the decorations associated with the logger
 var UseDecoration bool = true
 
-// UseTimestamp flag determines whether standard output logs should prepend timestamp
-var UseTimestamp bool = true
+// PrependTimestamp flag determines whether standard output logs should prepend timestamp
+var PrependTimestamp bool = true
+
+// PrependLoggerName determines whether standard output logs with the name of the logger profile prepended
+var PrependLoggerName bool = true
 
 // TimestampFormat is the format of the timestamp that is prepernded to std out logs. The default value
 // is 2006/01/02 15:04:05
 var TimestampFormat string = "2006/01/02 15:04:05"
 
-/********************************************************************************
-* D E C O R A T I O N 															*
-*********************************************************************************/
-
-// Decoration represents an ANSI escape sequence, that can be used to format a message
-// logged to the standard out (terminal).
-type Decoration string
-
-const (
-	RESET Decoration = "\x1b[0m"
-
-	// decorations
-	BRIGHT     Decoration = "\x1b[1m"
-	DIM        Decoration = "\x1b[2m"
-	UNDERSCORE Decoration = "\x1b[4m"
-	BLINK      Decoration = "\x1b[5m"
-	REVERSE    Decoration = "\x1b[7m"
-	HIDDEN     Decoration = "\x1b[8m"
-
-	// foreground colors represent the color of the logged text
-	FG_BLACK   Decoration = "\x1b[30m"
-	FG_RED     Decoration = "\x1b[31m"
-	FG_GREEN   Decoration = "\x1b[32m"
-	FG_YELLOW  Decoration = "\x1b[33m"
-	FG_BLUE    Decoration = "\x1b[34m"
-	FG_MAGENTA Decoration = "\x1b[35m"
-	FG_CYAN    Decoration = "\x1b[36m"
-	FG_WHITE   Decoration = "\x1b[37m"
-
-	// background colors represent the background color of the logged text
-	BG_BLACK   Decoration = "\x1b[40m"
-	BG_RED     Decoration = "\x1b[41m"
-	BG_GREEN   Decoration = "\x1b[42m"
-	BG_YELLOW  Decoration = "\x1b[43m"
-	BG_BLUE    Decoration = "\x1b[44m"
-	BG_MAGENTA Decoration = "\x1b[45m"
-	BG_CYAN    Decoration = "\x1b[46m"
-	BG_WHITE   Decoration = "\x1b[47m"
-)
-
-// NewDecoration takes a string representation of sgr code (ANSI), casts it as a Decoration, and returns it. It panics if the sgrCode is not
-// a valid ansi escape sequence code.
-func NewDecoration(sgrCode string) Decoration {
-	// verify that it's an ansi code
-	// regex from: https://superuser.com/questions/380772/removing-ansi-color-codes-from-text-stream
-	reg := regexp.MustCompile(`^\x1b\[[0-9;]*[mG]$`)
-	if !reg.MatchString(sgrCode) {
-		panic(fmt.Sprintf("%s: invalid sgr code '%s' provided", PACKAGE_NAME, sgrCode))
-	}
-	return Decoration(sgrCode)
+// Info logs the msg using the "Info" default clogger.
+func Info(msg string) {
+	clogger := GetCloggerByName("Info")
+	clogger.Print(msg)
 }
 
-/********************************************************************************
-* S Y S L O G G E R   															*
-*********************************************************************************/
-
-// Clogger is the primary logger of this package. It represents a logger profile that has
-// associated decorations Decorations, syslog priority level. This package come with some
-// default Cloggers, but Clogger can also be created using the NewClogger() method.
-type Clogger struct {
-	Name string
-	syslog.Priority
-	Decorations []Decoration
-	*log.Logger
+// Infof formats the message using the provided args, and logs the message using the 'Info' default clogger.
+func Infof(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Info")
+	clogger.Printf(formatString, args...)
 }
 
-// NewClogger accepts priority in the form of syslog.Priority, and a Color, and returns
-// a pointer to a new Clogger object with those properties. It panics if it encounters an error.
-func NewClogger(name string, priority syslog.Priority, decorations ...Decoration) *Clogger {
-	clogger := new(Clogger)
-	clogger.Name = name
-	clogger.Priority = priority
-	clogger.Decorations = decorations
-	// https://en.wikipedia.org/wiki/Syslog
-	logger, err := syslog.NewLogger(clogger.Priority, 0)
-	if err != nil {
-		log.Printf("[%s] '%s' clogger will not log to syslog as it failed to initialize syslog.Logger(): %v", PACKAGE_NAME, clogger.Name, err)
-	} else {
-		clogger.Logger = logger
-	}
-
-	err = registerClogger(clogger)
-	if err != nil {
-		log.Panic(err)
-	}
-	return clogger
+// Debug logs the msg using the "Debug" default clogger.
+func Debug(msg string) {
+	clogger := GetCloggerByName("Debug")
+	clogger.Print(msg)
 }
 
-// AddDecoration adds the decoration to the Clogger.
-func (l *Clogger) AddDecoration(d Decoration) {
-	l.Decorations = append(l.Decorations, d)
+// Debugf formats the message using the provided args, and logs the message using the 'Debug' default clogger.
+func Debugf(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Debug")
+	clogger.Printf(formatString, args...)
 }
 
-// RemoveDecoration removes the decoration from the Clogger.
-func (l *Clogger) RemoveDecoration(d Decoration) {
-	for i, _d := range l.Decorations {
-		if d == _d {
-			// delete the decoration from the list
-			l.Decorations = append(l.Decorations[:i], l.Decorations[i+1:]...)
-		}
-	}
+// Notice logs the msg using the "Notice" default clogger.
+func Notice(msg string) {
+	clogger := GetCloggerByName("Notice")
+	clogger.Print(msg)
 }
 
-// Print logs the message in the Syslog if LogToSyslog is set to true. It logs to the standard out
-// (terminal) if LogToStdOut flag is set to true.
-func (l *Clogger) Print(msg string) {
-	if LogToSyslog && l.Logger != nil {
-		l.Logger.Print(msg)
-	}
-	if LogToStdOut {
-		l.PrintStdOut(msg)
-	}
+// Noticef formats the message using the provided args, and logs the message using the 'Notice' default clogger.
+func Noticef(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Notice")
+	clogger.Printf(formatString, args...)
 }
 
-// Printf formats the msg with the provided args and logs to Syslog. If LogToStdOut flag
-// is set to true, it also logs the message to the standard out. Printf formats the message
-// with the provided args. It logs the message in the Syslog if LogToSyslog is
-// set to true. It logs to the standard out (terminal) if LogToStdOut flag is set to true.
-func (l *Clogger) Printf(formatString string, args ...interface{}) {
-	if LogToSyslog && l.Logger != nil {
-		l.Logger.Printf(formatString, args...)
-	}
-	if LogToStdOut {
-		l.PrintfStdOut(formatString, args...)
-	}
+// Warning logs the msg using the "Warning" default clogger.
+func Warning(msg string) {
+	clogger := GetCloggerByName("Warning")
+	clogger.Print(msg)
 }
 
-// StdPrint prints msg as a line in the standard output (terminal). If UseTimestamp is set to true,
-// it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
-// associated with the l Clogger.
-func (l *Clogger) PrintStdOut(msg string) {
-	if UseTimestamp {
-		msg = appendTimestamp(msg)
-	}
-	if UseDecoration {
-		msg = decorate(msg, l.Decorations...)
-	}
+// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
+func Warningf(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Warning")
+	clogger.Printf(formatString, args...)
+}
+
+// Warn logs the msg using the "Warning" default clogger.
+func Warn(msg string) {
+	Warning(msg)
+}
+
+// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
+func Warnf(formatString string, args ...interface{}) {
+	Warningf(formatString, args...)
+}
+
+// Error logs the msg using the "Error" default clogger.
+func Error(msg string) {
+	clogger := GetCloggerByName("Error")
+	clogger.Print(msg)
+}
+
+// Errorf formats the message using the provided args, and logs the message using the 'Error' default clogger.
+func Errorf(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Error")
+	clogger.Printf(formatString, args...)
+}
+
+// Crit logs the msg using the "Crit" default clogger.
+func Crit(msg string) {
+	clogger := GetCloggerByName("Crit")
+	clogger.Print(msg)
+}
+
+// Critf formats the message using the provided args, and logs the message using the 'Crit' default clogger.
+func Critf(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Crit")
+	clogger.Printf(formatString, args...)
+}
+
+// Fatal logs the msg using the "Fatal" default clogger. It also terminates the process by calling log.Fatal.
+func Fatal(msg string) {
+	Crit(msg)
+	log.Fatal(msg)
+}
+
+// Fatalf formats the message using the provided args, and logs the message using the 'Fatal' default clogger.
+// It also terminates the process by calling log.Fatalf.
+func Fatalf(formatString string, args ...interface{}) {
+	Critf(formatString, args...)
+	log.Fatalf(formatString, args...)
+}
+
+func Redf(msg string, args ...interface{}) {
+	Red(fmt.Sprintf(msg, args...))
+}
+
+func Red(msg string) {
+	PrintWithDecorations(msg, FG_RED)
+}
+
+func Greenf(msg string, args ...interface{}) {
+	Green(fmt.Sprintf(msg, args...))
+}
+
+func Green(msg string) {
+	PrintWithDecorations(msg, FG_GREEN)
+}
+
+func Yellowf(msg string, args ...interface{}) {
+	Yellow(fmt.Sprintf(msg, args...))
+}
+
+func Yellow(msg string) {
+	PrintWithDecorations(msg, FG_YELLOW)
+}
+
+func Bluef(msg string, args ...interface{}) {
+	Blue(fmt.Sprintf(msg, args...))
+}
+func Blue(msg string) {
+	PrintWithDecorations(msg, FG_BLUE)
+}
+
+func Println(msg string) {
 	fmt.Println(msg)
 }
 
-// StdPrintf formats msg with the provided args and prints it as a line in the standard output. If UseTimestamp is
-// set to true, it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
-// associated with the l Clogger.
-func (l *Clogger) PrintfStdOut(formatString string, args ...interface{}) {
-	msg := fmt.Sprintf(formatString, args...)
-	l.PrintStdOut(msg)
+func Printf(msg string, args ...interface{}) {
+	fmt.Printf(msg, args...)
 }
 
-func Print(msg string, decorations ...Decoration) {
+func PrintWithDecorations(msg string, decorations ...Decoration) {
 	msg = decorate(msg, decorations...)
 	fmt.Println(msg)
 }
 
-func appendTimestamp(msg string) string {
+// Panic takes an error as an argument and calls logs.Panic
+func Panic(err error) {
+	log.Panic(err)
+}
+
+func prependTimestamp(msg string) string {
 	return fmt.Sprintf("%s %s", timestamp(), msg)
 }
 
@@ -209,140 +201,4 @@ func addBreak(msg string) string {
 
 func timestamp() string {
 	return time.Now().Format(TimestampFormat)
-}
-
-/********************************************************************************
-* S Y S L O G G E R   															*
-*********************************************************************************/
-var cloggers map[string]*Clogger = make(map[string]*Clogger)
-
-// default cloggers
-var defaultCloggers []*Clogger = []*Clogger{
-	NewClogger("Debug", syslog.LOG_DEBUG|syslog.LOG_LOCAL1, FG_WHITE),
-	NewClogger("Info", syslog.LOG_INFO|syslog.LOG_LOCAL1, FG_GREEN),
-	NewClogger("Notice", syslog.LOG_NOTICE|syslog.LOG_LOCAL1, FG_CYAN),
-	NewClogger("Warning", syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_YELLOW),
-	NewClogger("Error", syslog.LOG_ERR|syslog.LOG_LOCAL1, FG_RED),
-	NewClogger("Crit", syslog.LOG_CRIT|syslog.LOG_LOCAL1, FG_MAGENTA),
-}
-
-// registerLogger adds a new Clogger to the cloggers map, which can then be fetched
-// by calling the GetCloggerByName method.
-func registerClogger(cl *Clogger) error {
-	if _, exists := cloggers[cl.Name]; exists {
-		return fmt.Errorf("%s: a logger with the name %s already exists", PACKAGE_NAME, cl.Name)
-	}
-	cloggers[cl.Name] = cl
-	return nil
-}
-
-// GetCloggerByName provides the pointer to the Clogger that is stored by the given name.
-// It panics if a clogger by that name doesn't exist.
-func GetCloggerByName(name string) *Clogger {
-	cl, exist := cloggers[name]
-	// panics if loggers[name] doesn't exist
-	if !exist {
-		log.Panicf("%s: no logger with name %s", PACKAGE_NAME, name)
-	}
-	return cl
-}
-
-// Info logs the msg using the "Info" default clogger.
-func Info(msg string) {
-	clogger := GetCloggerByName("Info")
-	clogger.Print(msg)
-}
-
-// Debug logs the msg using the "Debug" default clogger.
-func Debug(msg string) {
-	clogger := GetCloggerByName("Debug")
-	clogger.Print(msg)
-}
-
-// Notice logs the msg using the "Notice" default clogger.
-func Notice(msg string) {
-	clogger := GetCloggerByName("Notice")
-	clogger.Print(msg)
-}
-
-// Warning logs the msg using the "Warning" default clogger.
-func Warning(msg string) {
-	clogger := GetCloggerByName("Warning")
-	clogger.Print(msg)
-}
-
-// Warn logs the msg using the "Warning" default clogger.
-func Warn(msg string) {
-	Warning(msg)
-}
-
-// Error logs the msg using the "Error" default clogger.
-func Error(msg string) {
-	clogger := GetCloggerByName("Error")
-	clogger.Print(msg)
-}
-
-// Crit logs the msg using the "Crit" default clogger.
-func Crit(msg string) {
-	clogger := GetCloggerByName("Crit")
-	clogger.Print(msg)
-}
-
-// Fatal logs the msg using the "Fatal" default clogger. It also terminates the process by calling log.Fatal.
-func Fatal(msg string) {
-	Crit(msg)
-	log.Fatal(msg)
-}
-
-// FatalErr takes an error as an argument and logs the error msg using the "Fatal" default clogger. It also terminates the process by calling log.Fatal.
-func FatalErr(err error) {
-	Fatal(err.Error())
-}
-
-// Infof formats the message using the provided args, and logs the message using the 'Info' default clogger.
-func Infof(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Info")
-	clogger.Printf(formatString, args...)
-}
-
-// Debugf formats the message using the provided args, and logs the message using the 'Debug' default clogger.
-func Debugf(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Debug")
-	clogger.Printf(formatString, args...)
-}
-
-// Noticef formats the message using the provided args, and logs the message using the 'Notice' default clogger.
-func Noticef(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Notice")
-	clogger.Printf(formatString, args...)
-}
-
-// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
-func Warningf(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Warning")
-	clogger.Printf(formatString, args...)
-}
-
-// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
-func Warnf(formatString string, args ...interface{}) {
-	Warningf(formatString, args...)
-}
-
-// Errorf formats the message using the provided args, and logs the message using the 'Error' default clogger.
-func Errorf(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Error")
-	clogger.Printf(formatString, args...)
-}
-
-// Critf formats the message using the provided args, and logs the message using the 'Crit' default clogger.
-func Critf(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Crit")
-	clogger.Printf(formatString, args...)
-}
-
-// Fatalf formats the message using the provided args, and logs the message using the 'Fatal' default clogger.
-// It also terminates the process by calling log.Fatalf.
-func Fatalf(formatString string, args ...interface{}) {
-	Critf(formatString, args...)
-	log.Fatalf(formatString, args...)
 }
