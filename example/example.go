@@ -3,12 +3,13 @@ package main
 import (
 	"fmt" // Required for Example 3
 	"github.com/teejays/clog"
-	"log/syslog" // Required for Example 2
 )
 
 func main() {
 
 	clog.LogToSyslog = true // Windows does not have Syslog, so syslog wouldn't work on Windows
+
+	clog.LogLevel = clog.LogLevelInfo
 
 	// Example 1: Default Cloggers
 	clog.Debug("Debug: This is a debug statement.")
@@ -27,7 +28,7 @@ func main() {
 	clog.Critf("Crit: This is a %s statement.", "Crit")
 
 	// Example 2: Creating your own Clogger
-	myLogger := clog.NewClogger("myClogger", syslog.LOG_INFO|syslog.LOG_LOCAL1, clog.BLINK, clog.FG_GREEN)
+	myLogger := clog.NewClogger("myClogger", clog.LogLevelInfo, clog.BLINK, clog.FG_GREEN)
 	myLogger.Print("myLogger: This is a myLogger statement")
 	myLogger.Printf("myLogger: This is a %s statement.", "myLogger")
 

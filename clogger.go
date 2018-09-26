@@ -6,16 +6,18 @@ import (
 	"log/syslog"
 )
 
+const DEFAULT_LOG_FACILITY = syslog.LOG_LOCAL1
+
 var cloggers map[string]*Clogger = make(map[string]*Clogger)
 
 // default cloggers
 var defaultCloggers []*Clogger = []*Clogger{
-	NewClogger("Debug", syslog.LOG_DEBUG|syslog.LOG_LOCAL1, FG_WHITE),
-	NewClogger("Info", syslog.LOG_INFO|syslog.LOG_LOCAL1, FG_GREEN),
-	NewClogger("Notice", syslog.LOG_NOTICE|syslog.LOG_LOCAL1, FG_CYAN),
-	NewClogger("Warning", syslog.LOG_WARNING|syslog.LOG_LOCAL1, FG_YELLOW),
-	NewClogger("Error", syslog.LOG_ERR|syslog.LOG_LOCAL1, FG_RED),
-	NewClogger("Crit", syslog.LOG_CRIT|syslog.LOG_LOCAL1, FG_MAGENTA),
+	NewClogger("Debug", LogLevelDebug, FG_WHITE),
+	NewClogger("Info", LogLevelInfo, FG_GREEN),
+	NewClogger("Notice", LogLevelNotice, FG_CYAN),
+	NewClogger("Warning", LogLevelWarning, FG_YELLOW),
+	NewClogger("Error", LogLevelError, FG_RED),
+	NewClogger("Crit", LogLevelCrit, FG_MAGENTA),
 }
 
 // registerLogger adds a new Clogger to the cloggers map, which can then be fetched
@@ -39,6 +41,15 @@ func GetCloggerByName(name string) *Clogger {
 	return cl
 }
 
+var LogLevelSysLogPriorityMap map[int]syslog.Priority = map[int]syslog.Priority{
+	LogLevelDebug:   syslog.LOG_DEBUG,
+	LogLevelInfo:    syslog.LOG_INFO,
+	LogLevelNotice:  syslog.LOG_NOTICE,
+	LogLevelWarning: syslog.LOG_WARNING,
+	LogLevelError:   syslog.LOG_ERR,
+	LogLevelCrit:    syslog.LOG_CRIT,
+}
+
 /********************************************************************************
 * C L O G G E R
 *********************************************************************************/
@@ -52,15 +63,22 @@ type Clogger struct {
 	syslog.Priority
 	Decorations []Decoration
 	*log.Logger
+	LogLevel int
 }
 
 // NewClogger creates a new Clogger object. It accepts the name of the new Clogger, priority level
 // in the form of syslog.Priority and one or more Decorations. It returns a pointer to a new Clogger
 // object with those properties. It panics if it encounters an error.
-func NewClogger(name string, priority syslog.Priority, decorations ...Decoration) *Clogger {
+func NewClogger(name string, logLevel int, decorations ...Decoration) *Clogger {
 	clogger := new(Clogger)
 	clogger.Name = name
-	clogger.Priority = priority
+	clogger.LogLevel = logLevel
+	// Get the syslog.Level from the map
+	priority, hasKey := LogLevelSysLogPriorityMap[logLevel]
+	if !hasKey {
+		log.Panicf("Invalid LogLevel parameter provided as no syslog.Priority associated with LogLevel %d", logLevel)
+	}
+	clogger.Priority = priority | DEFAULT_LOG_FACILITY
 	clogger.Decorations = decorations
 	// https://en.wikipedia.org/wiki/Syslog
 	logger, err := syslog.NewLogger(clogger.Priority, 0)
@@ -101,7 +119,7 @@ func (l *Clogger) Print(msg string) {
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Print(msg)
 	}
-	if LogToStdOut {
+	if LogToStdOut && LogLevel <= l.LogLevel {
 		l.PrintStdOut(msg)
 	}
 }
@@ -115,7 +133,7 @@ func (l *Clogger) Printf(formatString string, args ...interface{}) {
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Printf(formatString, args...)
 	}
-	if LogToStdOut {
+	if LogToStdOut && LogLevel <= l.LogLevel {
 		l.PrintfStdOut(formatString, args...)
 	}
 }

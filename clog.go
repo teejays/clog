@@ -20,6 +20,22 @@ import (
 
 const PACKAGE_NAME string = `Clog`
 
+// LogLevel
+const (
+	LogLevelDebug = iota
+	LogLevelInfo
+	LogLevelNotice
+	LogLevelWarning
+	LogLevelError
+	LogLevelCrit
+	// LogLevelAlert // Not implemented
+	// LogLevelEmergency // Not implemented
+)
+
+const default_log_level = LogLevelDebug
+
+var LogLevel = default_log_level // Default LogLevel
+
 // LogToStdOut flag determines if messages should be logged to the standard terminal output
 var LogToStdOut bool = true
 
@@ -39,18 +55,6 @@ var PrependLoggerName bool = true
 // is 2006/01/02 15:04:05
 var TimestampFormat string = "2006/01/02 15:04:05"
 
-// Info logs the msg using the "Info" default clogger.
-func Info(msg string) {
-	clogger := GetCloggerByName("Info")
-	clogger.Print(msg)
-}
-
-// Infof formats the message using the provided args, and logs the message using the 'Info' default clogger.
-func Infof(formatString string, args ...interface{}) {
-	clogger := GetCloggerByName("Info")
-	clogger.Printf(formatString, args...)
-}
-
 // Debug logs the msg using the "Debug" default clogger.
 func Debug(msg string) {
 	clogger := GetCloggerByName("Debug")
@@ -60,6 +64,18 @@ func Debug(msg string) {
 // Debugf formats the message using the provided args, and logs the message using the 'Debug' default clogger.
 func Debugf(formatString string, args ...interface{}) {
 	clogger := GetCloggerByName("Debug")
+	clogger.Printf(formatString, args...)
+}
+
+// Info logs the msg using the "Info" default clogger.
+func Info(msg string) {
+	clogger := GetCloggerByName("Info")
+	clogger.Print(msg)
+}
+
+// Infof formats the message using the provided args, and logs the message using the 'Info' default clogger.
+func Infof(formatString string, args ...interface{}) {
+	clogger := GetCloggerByName("Info")
 	clogger.Printf(formatString, args...)
 }
 
@@ -127,6 +143,10 @@ func Fatal(msg string) {
 	log.Fatal(msg)
 }
 
+func FatalErr(err error) {
+	Fatal(err.Error())
+}
+
 // Fatalf formats the message using the provided args, and logs the message using the 'Fatal' default clogger.
 // It also terminates the process by calling log.Fatalf.
 func Fatalf(formatString string, args ...interface{}) {
@@ -137,7 +157,6 @@ func Fatalf(formatString string, args ...interface{}) {
 func Redf(msg string, args ...interface{}) {
 	Red(fmt.Sprintf(msg, args...))
 }
-
 func Red(msg string) {
 	PrintWithDecorations(msg, FG_RED)
 }
@@ -145,7 +164,6 @@ func Red(msg string) {
 func Greenf(msg string, args ...interface{}) {
 	Green(fmt.Sprintf(msg, args...))
 }
-
 func Green(msg string) {
 	PrintWithDecorations(msg, FG_GREEN)
 }
@@ -153,7 +171,6 @@ func Green(msg string) {
 func Yellowf(msg string, args ...interface{}) {
 	Yellow(fmt.Sprintf(msg, args...))
 }
-
 func Yellow(msg string) {
 	PrintWithDecorations(msg, FG_YELLOW)
 }
