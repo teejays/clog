@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"log/syslog"
+	"strings"
 )
 
 const DEFAULT_LOG_FACILITY = syslog.LOG_LOCAL1
@@ -12,7 +13,7 @@ var cloggers map[string]*Clogger = make(map[string]*Clogger)
 
 // default cloggers
 var defaultCloggers []*Clogger = []*Clogger{
-	NewClogger("Debug", LogLevelDebug, FG_WHITE),
+	NewClogger("Debug", LogLevelDebug, FG_GRAY_LIGHT),
 	NewClogger("Info", LogLevelInfo, FG_GREEN),
 	NewClogger("Notice", LogLevelNotice, FG_CYAN),
 	NewClogger("Warning", LogLevelWarning, FG_YELLOW),
@@ -115,7 +116,7 @@ func (l *Clogger) RemoveDecoration(d Decoration) {
 // Print logs the message in the Syslog if LogToSyslog is set to true. It logs to the standard out
 // (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Print(msg string) {
-	msg = fmt.Sprintf("[%s] %s", l.Name, msg)
+	msg = fmt.Sprintf("[%s] %s", strings.ToUpper(l.Name), msg)
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Print(msg)
 	}
@@ -129,7 +130,7 @@ func (l *Clogger) Print(msg string) {
 // with the provided args. It logs the message in the Syslog if LogToSyslog is
 // set to true. It logs to the standard out (terminal) if LogToStdOut flag is set to true.
 func (l *Clogger) Printf(formatString string, args ...interface{}) {
-	formatString = fmt.Sprintf("[%s] %s", l.Name, formatString)
+	formatString = fmt.Sprintf("[%s] %s", strings.ToUpper(l.Name), formatString)
 	if LogToSyslog && l.Logger != nil {
 		l.Logger.Printf(formatString, args...)
 	}
@@ -150,11 +151,11 @@ func (l *Clogger) PrintfStdOut(formatString string, args ...interface{}) {
 // it prepends timestamp to the log messages. If UseDecoration is set to true, it adds all the decorations
 // associated with the l Clogger.
 func (l *Clogger) PrintStdOut(msg string) {
-	if PrependTimestamp {
-		msg = prependTimestamp(msg)
-	}
 	if UseDecoration {
 		msg = decorate(msg, l.Decorations...)
+	}
+	if PrependTimestamp {
+		msg = prependTimestamp(msg)
 	}
 	fmt.Println(msg)
 }
