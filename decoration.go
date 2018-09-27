@@ -37,7 +37,7 @@ const (
 	FG_RED_LIGHT     Decoration = "\x1b[91m"
 	FG_GREEN_LIGHT   Decoration = "\x1b[92m"
 	FG_YELLOW_LIGHT  Decoration = "\x1b[93m"
-	FG_BBLUE_LIGHT   Decoration = "\x1b[94m"
+	FG_BLUE_LIGHT    Decoration = "\x1b[94m"
 	FG_MAGENTA_LIGHT Decoration = "\x1b[95m"
 	FG_CYAN_LIGHT    Decoration = "\x1b[96m"
 	FG_WHITE_LIGHT   Decoration = "\x1b[97m"
