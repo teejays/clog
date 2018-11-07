@@ -15,6 +15,7 @@ package clog
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
@@ -140,7 +141,7 @@ func Critf(formatString string, args ...interface{}) {
 // Fatal logs the msg using the "Fatal" default clogger. It also terminates the process by calling log.Fatal.
 func Fatal(msg string) {
 	Crit(msg)
-	log.Fatal(msg)
+	os.Exit(1) // this should exit the process
 }
 
 func FatalErr(err error) {
@@ -196,8 +197,11 @@ func PrintWithDecorations(msg string, decorations ...Decoration) {
 }
 
 // Panic takes an error as an argument and calls logs.Panic
-func Panic(err error) {
-	log.Panic(err)
+func Panic(v ...interface{}) {
+	log.Panic(v)
+}
+func Panicf(format string, v ...interface{}) {
+	log.Panicf(format, v)
 }
 
 func prependTimestamp(msg string) string {
