@@ -109,7 +109,7 @@ func Warn(msg string) {
 	Warning(msg)
 }
 
-// Warningf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
+// Warnf formats the message using the provided args, and logs the message using the 'Warning' default clogger.
 func Warnf(formatString string, args ...interface{}) {
 	Warningf(formatString, args...)
 }
